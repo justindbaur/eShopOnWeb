@@ -34,6 +34,7 @@
                     </div>
                     <div class="form-group">
                         <button type="submit" class="btn btn-default">Log in</button>
+                        <button id="login-passwordless" type="button" class="btn btn-default">Log in Passwordless</button>
                     </div>
                     <div class="form-group">
                         <p>
@@ -60,4 +61,33 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.passwordless.dev/dist/1.1.0/umd/passwordless.umd.min.js" crossorigin="anonymous"></script>
+    <script>
+        const passwordlessClient = new Passwordless.Client({
+            apiKey: "eshoptest:public:18233d9a370f4ddaadf125b043b16869"
+        });
+        const signIn = async () => {
+            const email = document.getElementById("Input_Email").value;
+
+            const { token, error } = await passwordlessClient.signinWithAlias(email);
+
+            if (error) {
+                console.warn(error);
+                return;
+            }
+
+            var loginResponse = await fetch("/passwordless-login", {
+                method: "POST",
+                body: JSON.stringify({ token }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (loginResponse.ok) {
+                window.location.href = '/';
+            }
+        }
+        document.getElementById("login-passwordless").onclick = signIn;
+    </script>
 }

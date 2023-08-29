@@ -30,6 +30,7 @@
                     <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                 </div>
                 <button type="submit" class="btn btn-default">Register</button>
+                <button id="register-passwordless" type="button" class="btn btn-default">Register Passkey</button>
             </form>
         </div>
     </div>
@@ -38,4 +39,30 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.passwordless.dev/dist/1.1.0/umd/passwordless.umd.min.js" crossorigin="anonymous"></script>
+    <script>
+        const passwordlessClient = new Passwordless.Client({
+            apiKey: "eshoptest:public:18233d9a370f4ddaadf125b043b16869"
+        });
+        const register = async () => {
+            const email = document.getElementById("Input_Email").value;
+            const registerTokenResponse = await fetch("/passwordless-register", {
+                method: "POST",
+                body: JSON.stringify({ username: email, email: email }),
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            })
+                .then(r => r.json());
+
+            const { token, error } = await passwordlessClient.register(registerTokenResponse.token);
+            if (error) {
+                console.warn(error);
+                return;
+            }
+
+            console.log(token);
+        }
+        document.getElementById("register-passwordless").onclick = register;
+    </script>
 }
